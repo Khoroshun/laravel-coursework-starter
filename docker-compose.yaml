@@ -2,7 +2,7 @@ services:
     nginx:
       env_file:
         - .env
-      image: mobidevpublisher/nginx:1.21.3
+      image: mobidevpublisher/nginx:1.24
       restart: on-failure
       environment:
           NGINX_PREDEFINED_TEMPLATE: "laravel.conf.template"
@@ -35,7 +35,7 @@ services:
       env_file:
         - .env
       working_dir: /var/www/app/
-      image: mobidevpublisher/php:8.3
+      image: mobidevpublisher/php:8.4
       restart: on-failure
       environment:
         PHP_ENABLED_EXTENSIONS: "amqp apcu sodium redis zip pdo_pgsql gd gmp"
@@ -58,10 +58,10 @@ services:
       env_file:
         - .env
       working_dir: /var/www/app/
-      image: mobidevpublisher/php:8.3
+      image: mobidevpublisher/php:8.4
       restart: on-failure
       environment:
-        PHP_ENABLED_EXTENSIONS: "amqp apcu sodium redis zip pdo_pgsql gd gmp pcntl"
+        PHP_ENABLED_EXTENSIONS: "amqp apcu sodium redis zip pdo_pgsql gd gmp"
         PHP_ALLOW_URL_FOPEN: "On"
         PHP_MAX_EXECUTION_TIME: 60
         PHP_MAX_INPUT_TIME: 60
@@ -71,7 +71,7 @@ services:
         PHP_SHORT_OPEN_TAG: "On"
         PHP_DISPLAY_ERRORS: "On"
         PHP_DISPLAY_STARTUP_ERRORS: "On"
-      command: php artisan reverb:start --debug
+      command: sh -c "docker-php-ext-install pcntl > /dev/null 2>&1; exec php artisan reverb:start --debug"
       ports:
         - "8090:8090"
       volumes:
@@ -83,10 +83,10 @@ services:
       env_file:
         - .env
       working_dir: /var/www/app/
-      image: mobidevpublisher/php:8.3
+      image: mobidevpublisher/php:8.4
       restart: on-failure
       environment:
-        PHP_ENABLED_EXTENSIONS: "amqp apcu sodium redis zip pdo_pgsql gd gmp pcntl"
+        PHP_ENABLED_EXTENSIONS: "amqp apcu sodium redis zip pdo_pgsql gd gmp"
         PHP_ALLOW_URL_FOPEN: "On"
         PHP_MAX_EXECUTION_TIME: 60
         PHP_MAX_INPUT_TIME: 60
@@ -99,15 +99,17 @@ services:
       command: php artisan queue:work --sleep=3 --tries=3 --timeout=60
       volumes:
         - ".:/var/www/app/"
+      networks:
+        - local
 
     scheduler:
       env_file:
         - .env
       working_dir: /var/www/app/
-      image: mobidevpublisher/php:8.3
+      image: mobidevpublisher/php:8.4
       restart: on-failure
       environment:
-        PHP_ENABLED_EXTENSIONS: "amqp apcu sodium redis zip pdo_pgsql gd gmp pcntl"
+        PHP_ENABLED_EXTENSIONS: "amqp apcu sodium redis zip pdo_pgsql gd gmp"
         PHP_ALLOW_URL_FOPEN: "On"
         PHP_MAX_EXECUTION_TIME: 60
         PHP_MAX_INPUT_TIME: 60
@@ -124,6 +126,8 @@ services:
         - php
         - postgres
         - redis
+      networks:
+        - local
 
     postgres:
       env_file:
